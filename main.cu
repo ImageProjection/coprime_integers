@@ -8,12 +8,12 @@ using namespace std;
 
 double eval_prob(int* h_matr, int matrix_size)
 {
-	double sum=0;
+	double sum=0.0;
 	for(int i=0; i<matrix_size*matrix_size; i++)
 	{
-		sum+=(h_matr[i]==0);
+		sum+=(h_matr[i]==1);
 	}
-	return sum/(matrix_size*matrix_size)
+	return sum/(matrix_size*matrix_size);
 }
 
 void print_matr(int* h_matr, int matrix_size, FILE* out_matr)
@@ -21,8 +21,8 @@ void print_matr(int* h_matr, int matrix_size, FILE* out_matr)
 	for(int x=1;x<matrix_size;x++)
 	{
 		for(int y=1;y<matrix_size; y++)//print row
-			fprintf(out_matr,"%d ",h_matr[x*matrix_size+y]);
-			//fprintf(out_matr,"%d ",(h_matr[x*matrix_size+y]==1) ? 1 : 0);
+			fprintf(out_matr,"%d ",h_matr[x*matrix_size+y]);//prints gcd's
+			//fprintf(out_matr,"%d ",(h_matr[x*matrix_size+y]==1) ? 1 : 0);//prints if coprime
 		fprintf(out_matr,"\n");
 	}
 }
@@ -88,7 +88,7 @@ int main()
 	cudaMemcpy(h_matr, d_matr, matrix_size*matrix_size*sizeof(int), cudaMemcpyDeviceToHost);
 
 	print_matr(h_matr,matrix_size,out_matr);
-	printf("probability of 2 integers being coprime=%.5lf (brute force on 1024*1024 square on GPU",eval_prob(h_matr,matrix_size));
+	printf("probability of 2 integers being coprime=%.5lf (brute force on 1024*1024 square on GPU\n",eval_prob(h_matr,matrix_size));
 
 	cudaFree(d_matr);
 	free(h_matr);
