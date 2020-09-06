@@ -6,7 +6,15 @@
 #include <curand_kernel.h>
 using namespace std;
 
-
+double eval_prob(int* h_matr, int matrix_size)
+{
+	double sum=0;
+	for(int i=0; i<matrix_size*matrix_size; i++)
+	{
+		sum+=(h_matr[i]==0);
+	}
+	return sum/(matrix_size*matrix_size)
+}
 
 void print_matr(int* h_matr, int matrix_size, FILE* out_matr)
 {
@@ -80,6 +88,7 @@ int main()
 	cudaMemcpy(h_matr, d_matr, matrix_size*matrix_size*sizeof(int), cudaMemcpyDeviceToHost);
 
 	print_matr(h_matr,matrix_size,out_matr);
+	printf("probability of 2 integers being coprime=%.5lf (brute force on 1024*1024 square on GPU",eval_prob(h_matr,matrix_size));
 
 	cudaFree(d_matr);
 	free(h_matr);
