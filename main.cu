@@ -6,25 +6,24 @@
 #include <curand_kernel.h>
 using namespace std;
 
-#define N_batches 100 //Matrix size = N_batches*batch_size
-#define batch_size 1024
+#define matrix_size 1024
 
-void print_matr(int* h_matr,int matrix_size, FILE* out_matr)
+void print_matr(int* h_matr, int matrix_size, FILE* out_matr)
 {
 	for(int x=0;x<matrix_size;x++)
 	{
-		for(int y=0;y<matrix_size y++)//print row
+		for(int y=0;y<matrix_size; y++)//print row
 			printf("%d ",h_matr[x*matrix_size+y]);
 		printf("\n");
 	}
 }
 
-__global__ fill_matr(int* d_matr, int matrix_size)
+void __global__ fill_matr(int* d_matr, int matrix_size)
 {
-	int idx=blockIdx.x*blockDim.x + threadIdx.x;
-	int idy=blockIdx.y*blockDim.y + threadIdx.y;
+	int idx=1;
+	int idy=threadIdx.y;
 	int gcd,a,b;
-	for(int i=0;i<N_batches;i++)//find gcd of elements in the batch, then move on to next
+	for(int i=0;i<matrix_size;i++)//find gcd of elements in the batch, then move on to next
 	{
 		//d_matr[idx][idy]=gcd(idx,idy)
 		a=idx;
@@ -50,7 +49,7 @@ __global__ fill_matr(int* d_matr, int matrix_size)
 		}*/
 		gcd=5;
 		d_matr[idx*matrix_size+idy]=gcd;
-		idy+=batch_size;
+		idx++;
 		__syncthreads();//try without it		
 	}
 }
@@ -64,23 +63,22 @@ int main()
 	cudaGetDeviceProperties(&prop, 0);
 	printf("kernel timeout enabled: %d\n",prop.kernelExecTimeoutEnabled);
 
-	const int matrix_size=N_batches*batch_size;
 	//files
 	FILE *out_matr;
 	out_matr=fopen("out_matr.txt","w");
 	//matr 1d array
 	int* d_matr;
-	cudaMalloc((void**)&d_matr, matrix_size*sizeof(int));
+	cudaMalloc((void**)&d_matr, matrix_size*matrix_size*sizeof(int));
 	int* h_matr;
-	h_matr=(int*)malloc(matrix_size*sizeof(int));
+	h_matr=(int*)malloc(matrix_size*matrix_size*sizeof(int));
 	
 	//kernel launch config
-	dim3 grid_conf(matrix_size,1,1);
-	dim3 block_conf(1,batch_size,1);
+	dim3 grid_conf(1,1,1);
+	dim3 block_conf(1,matrix_size,1);
 
 	fill_matr<<<grid_conf,block_conf>>>(d_matr, matrix_size);
 
-	cudaMemcpy(h_matr, d_matr, matrix_size*sizeof(int), cudaMemcpyDeviceToHost);
+	cudaMemcpy(h_matr, d_matr, matrix_size*matrix_size*sizeof(int), cudaMemcpyDeviceToHost);
 
 	print_matr(h_matr,matrix_size,out_matr);
 
