@@ -9,16 +9,49 @@ using namespace std;
 #define N_batches 100 //Matrix size = N_batches*batch_size
 #define batch_size 1024
 
+void print_matr(int* h_matr,int matrix_size, FILE* out_matr)
+{
+	for(int x=0;x<matrix_size;x++)
+	{
+		for(int y=0;y<matrix_size y++)//print row
+			printf("%d ",h_matr[x*matrix_size+y]);
+		printf("\n");
+	}
+}
+
 __global__ fill_matr(int* d_matr, int matrix_size)
 {
 	int idx=blockIdx.x*blockDim.x + threadIdx.x;
 	int idy=blockIdx.y*blockDim.y + threadIdx.y;
+	int gcd,a,b;
 	for(int i=0;i<N_batches;i++)//find gcd of elements in the batch, then move on to next
 	{
 		//d_matr[idx][idy]=gcd(idx,idy)
-		//idx+=batch_size
-		//idy+=batch_size
-		
+		a=idx;
+		b=idy;
+		/*while ((a!=0) && (b!=0))
+    	{
+        	if (a>b)
+        	{
+            	a%=b;
+        	}
+        	else
+        	{
+        	    b%=a;
+        	}
+    	}
+    	if (a==0)
+    	{
+    	    gcd=b;
+    	}
+    	else
+    	{
+    	    gcd=a;
+		}*/
+		gcd=5;
+		d_matr[idx*matrix_size+idy]=gcd;
+		idy+=batch_size;
+		__syncthreads();//try without it		
 	}
 }
 
@@ -49,7 +82,7 @@ int main()
 
 	cudaMemcpy(h_matr, d_matr, matrix_size*sizeof(int), cudaMemcpyDeviceToHost);
 
-	print_matr(h_matr,matrix_size);
+	print_matr(h_matr,matrix_size,out_matr);
 
 	cudaFree(d_matr);
 	free(h_matr);
