@@ -10,10 +10,11 @@ using namespace std;
 
 void print_matr(int* h_matr, int matrix_size, FILE* out_matr)
 {
-	for(int x=0;x<matrix_size;x++)
+	for(int x=1;x<matrix_size;x++)
 	{
-		for(int y=0;y<matrix_size; y++)//print row
+		for(int y=1;y<matrix_size; y++)//print row
 			fprintf(out_matr,"%d ",h_matr[x*matrix_size+y]);
+			//fprintf(out_matr,"%d ",(h_matr[x*matrix_size+y]==1) ? 1 : 0);
 		fprintf(out_matr,"\n");
 	}
 }
