@@ -6,29 +6,28 @@
 #include <curand_kernel.h>
 using namespace std;
 
-#define matrix_size 1024
+
 
 void print_matr(int* h_matr, int matrix_size, FILE* out_matr)
 {
 	for(int x=0;x<matrix_size;x++)
 	{
 		for(int y=0;y<matrix_size; y++)//print row
-			printf("%d ",h_matr[x*matrix_size+y]);
-		printf("\n");
+			fprintf(out_matr,"%d ",h_matr[x*matrix_size+y]);
+		fprintf(out_matr,"\n");
 	}
 }
 
 void __global__ fill_matr(int* d_matr, int matrix_size)
 {
-	int idx=1;
+	int gcd=0,a,b;
 	int idy=threadIdx.y;
-	int gcd,a,b;
-	for(int i=0;i<matrix_size;i++)//find gcd of elements in the batch, then move on to next
+	for(int idx=0;idx<matrix_size;idx++)//find gcd of elements in the batch, then move on to next
 	{
 		//d_matr[idx][idy]=gcd(idx,idy)
 		a=idx;
 		b=idy;
-		/*while ((a!=0) && (b!=0))
+		while ((a!=0) && (b!=0))
     	{
         	if (a>b)
         	{
@@ -46,10 +45,8 @@ void __global__ fill_matr(int* d_matr, int matrix_size)
     	else
     	{
     	    gcd=a;
-		}*/
-		gcd=5;
+		}
 		d_matr[idx*matrix_size+idy]=gcd;
-		idx++;
 		__syncthreads();//try without it		
 	}
 }
@@ -63,8 +60,9 @@ int main()
 	cudaGetDeviceProperties(&prop, 0);
 	printf("kernel timeout enabled: %d\n",prop.kernelExecTimeoutEnabled);
 
+	const int matrix_size=1024;
 	//files
-	FILE *out_matr;
+	FILE* out_matr;
 	out_matr=fopen("out_matr.txt","w");
 	//matr 1d array
 	int* d_matr;
